@@ -2,6 +2,7 @@ export interface Employee {
   id: string
   name: string
   pin: string
+  daily_rate: number
   is_active: boolean
   created_at: string
 }
@@ -31,4 +32,20 @@ export interface DailyAttendance {
   employee: Employee
   log: TimeLog | null
   status: AttendanceStatus
+}
+
+export interface Payroll {
+  id: string
+  employee_id: string
+  week_start: string
+  week_end: string
+  days_worked: number
+  regular_hours: number
+  overtime_hours: number
+  daily_rate: number
+  regular_pay: number
+  overtime_pay: number
+  total_salary: number
+  created_at: string
+  employee?: Employee
 }

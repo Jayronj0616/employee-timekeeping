@@ -452,6 +452,7 @@ export default function DashboardPage() {
               </button>
             </div>
             <a href="/admin/employees" className="bg-gray-800 hover:bg-gray-700 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Employees</a>
+            <a href="/admin/payroll" className="bg-gray-800 hover:bg-gray-700 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Payroll</a>
             <a href="/admin/logs" className="bg-gray-800 hover:bg-gray-700 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Logs</a>
             <button onClick={logout} className="bg-red-900 hover:bg-red-800 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Logout</button>
           </div>

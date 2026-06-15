@@ -3,65 +3,92 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-const ADMIN_USERNAME = 'Javier0616'
-const ADMIN_PASSWORD = 'Lokigood17!'
+const ADMIN_PIN = '061601'
+const PIN_LENGTH = 6
 
 export default function LoginPage() {
   const router = useRouter()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [pin, setPin] = useState('')
   const [error, setError] = useState('')
+  const [shaking, setShaking] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  function handleDigit(digit: string) {
+    if (pin.length >= PIN_LENGTH) return
+    const next = pin + digit
+    setPin(next)
+    setError('')
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      document.cookie = 'admin_session=true; path=/; max-age=86400'
-      router.push('/admin/dashboard')
-    } else {
-      setError('Invalid username or password')
+    if (next.length === PIN_LENGTH) {
+      if (next === ADMIN_PIN) {
+        document.cookie = 'admin_session=true; path=/; max-age=86400'
+        router.push('/admin/dashboard')
+      } else {
+        setShaking(true)
+        setError('Incorrect PIN')
+        setTimeout(() => {
+          setPin('')
+          setShaking(false)
+        }, 600)
+      }
     }
   }
 
+  function handleBackspace() {
+    setPin((p) => p.slice(0, -1))
+    setError('')
+  }
+
+  const DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫']
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-gray-800 rounded-xl p-8"
-      >
-        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+      <div className="w-full max-w-xs bg-gray-800 rounded-2xl p-8">
+        <h1 className="text-2xl font-bold mb-2 text-center">Admin</h1>
+        <p className="text-gray-400 text-sm text-center mb-8">Enter your PIN</p>
 
-        {error && <p className="text-red-400 mb-4 text-center">{error}</p>}
-
-        <div className="mb-4">
-          <label className="block text-sm text-gray-400 mb-1">Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full bg-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            autoComplete="username"
-          />
+        {/* PIN dots */}
+        <div className={`flex justify-center gap-4 mb-6 ${shaking ? 'animate-bounce' : ''}`}>
+          {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-4 h-4 rounded-full border-2 transition-colors ${
+                i < pin.length
+                  ? error ? 'bg-red-500 border-red-500' : 'bg-white border-white'
+                  : 'border-gray-600'
+              }`}
+            />
+          ))}
         </div>
 
-        <div className="mb-6">
-          <label className="block text-sm text-gray-400 mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            autoComplete="current-password"
-          />
-        </div>
+        {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-500 rounded-lg py-3 font-semibold transition-colors"
-        >
-          Login
-        </button>
-      </form>
+        {/* Numpad */}
+        <div className="grid grid-cols-3 gap-3">
+          {DIGITS.map((d, i) => {
+            if (d === '') return <div key={i} />
+            if (d === '⌫') {
+              return (
+                <button
+                  key={i}
+                  onClick={handleBackspace}
+                  className="bg-gray-700 hover:bg-gray-600 rounded-xl py-4 text-xl font-semibold transition-colors"
+                >
+                  ⌫
+                </button>
+              )
+            }
+            return (
+              <button
+                key={i}
+                onClick={() => handleDigit(d)}
+                className="bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-xl py-4 text-xl font-semibold transition-colors"
+              >
+                {d}
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

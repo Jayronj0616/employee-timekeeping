@@ -10,9 +10,11 @@ export default function EmployeesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editPin, setEditPin] = useState('')
+  const [editRate, setEditRate] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [newName, setNewName] = useState('')
   const [newPin, setNewPin] = useState('')
+  const [newRate, setNewRate] = useState('')
   const [error, setError] = useState('')
 
   async function loadEmployees() {
@@ -34,6 +36,7 @@ export default function EmployeesPage() {
     setEditingId(emp.id)
     setEditName(emp.name)
     setEditPin(emp.pin)
+    setEditRate(String(emp.daily_rate ?? ''))
     setError('')
   }
 
@@ -41,6 +44,7 @@ export default function EmployeesPage() {
     setEditingId(null)
     setEditName('')
     setEditPin('')
+    setEditRate('')
     setError('')
   }
 
@@ -49,10 +53,15 @@ export default function EmployeesPage() {
       setError('PIN must be exactly 4 digits')
       return
     }
+    const rate = parseFloat(editRate)
+    if (isNaN(rate) || rate < 0) {
+      setError('Daily rate must be a valid number')
+      return
+    }
 
     const { error } = await supabase
       .from('employees')
-      .update({ name: editName, pin: editPin })
+      .update({ name: editName, pin: editPin, daily_rate: rate })
       .eq('id', id)
 
     if (error) {
@@ -81,10 +90,15 @@ export default function EmployeesPage() {
       setError('PIN must be exactly 4 digits')
       return
     }
+    const rate = parseFloat(newRate)
+    if (isNaN(rate) || rate < 0) {
+      setError('Daily rate must be a valid number')
+      return
+    }
 
     const { error } = await supabase
       .from('employees')
-      .insert({ name: newName.trim(), pin: newPin, is_active: true })
+      .insert({ name: newName.trim(), pin: newPin, daily_rate: rate, is_active: true })
 
     if (error) {
       setError(error.message.includes('duplicate') ? 'PIN already in use' : error.message)
@@ -93,6 +107,7 @@ export default function EmployeesPage() {
 
     setNewName('')
     setNewPin('')
+    setNewRate('')
     setShowAddForm(false)
     setError('')
     loadEmployees()
@@ -132,6 +147,14 @@ export default function EmployeesPage() {
               onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
               className="md:w-32 bg-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <input
+              type="number"
+              placeholder="Daily rate (₱)"
+              min={0}
+              value={newRate}
+              onChange={(e) => setNewRate(e.target.value)}
+              className="md:w-40 bg-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
             <button
               onClick={addEmployee}
               className="bg-green-600 hover:bg-green-500 rounded-lg px-6 py-2 font-semibold transition-colors"
@@ -165,6 +188,14 @@ export default function EmployeesPage() {
                       onChange={(e) => setEditPin(e.target.value.replace(/\D/g, ''))}
                       className="md:w-28 bg-gray-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Daily rate (₱)"
+                      value={editRate}
+                      onChange={(e) => setEditRate(e.target.value)}
+                      className="md:w-36 bg-gray-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                     <div className="flex gap-2">
                       <button
                         onClick={() => saveEdit(emp.id)}
@@ -185,6 +216,7 @@ export default function EmployeesPage() {
                     <div className="flex-1">
                       <p className="font-semibold">{emp.name}</p>
                       <p className="text-sm text-gray-400">PIN: {emp.pin}</p>
+                      <p className="text-sm text-gray-400">Rate: ₱{Number(emp.daily_rate ?? 0).toLocaleString()}/day</p>
                     </div>
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
