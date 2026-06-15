@@ -22,6 +22,7 @@ export default function EmployeesPage() {
     const { data, error } = await supabase
       .from('employees')
       .select('*')
+      .eq('is_deleted', false)
       .order('name', { ascending: true })
 
     if (!error && data) setEmployees(data as Employee[])

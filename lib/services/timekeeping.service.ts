@@ -53,11 +53,20 @@ function getPhilippineDateParts(date: Date) {
   }
 }
 
+export async function softDeleteEmployee(employeeId: string): Promise<void> {
+  const { error } = await supabase
+    .from('employees')
+    .update({ is_deleted: true })
+    .eq('id', employeeId)
+  if (error) throw error
+}
+
 export async function verifyPin(pin: string): Promise<Employee | null> {
   const { data, error } = await supabase
     .from('employees')
     .select('*')
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('pin', pin)
     .maybeSingle()
 
@@ -95,6 +104,7 @@ export async function findOrCreateEmployeeByName(name: string): Promise<Employee
     .select('*')
     .ilike('name', trimmedName)
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .maybeSingle()
 
   if (error) throw new Error('Failed to look up employee')

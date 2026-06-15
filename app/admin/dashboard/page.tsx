@@ -6,6 +6,7 @@ import {
   getAttendanceStatus,
   softDeleteLog,
   softDeleteLogsByDate,
+  softDeleteEmployee,
   updateLogTimes,
 } from '@/lib/services/timekeeping.service'
 import { Employee, TimeLog, AttendanceStatus } from '@/types'
@@ -293,6 +294,7 @@ export default function DashboardPage() {
       .from('employees')
       .select('*')
       .eq('is_active', true)
+      .eq('is_deleted', false)
       .order('name', { ascending: true })
 
     const { data: logs } = await supabase
@@ -323,6 +325,7 @@ export default function DashboardPage() {
       .from('employees')
       .select('*')
       .eq('is_active', true)
+      .eq('is_deleted', false)
       .order('name', { ascending: true })
 
     const { data: logs } = await supabase
@@ -371,6 +374,11 @@ export default function DashboardPage() {
 
   async function handleSoftDeleteOne(logId: string, reload: () => void) {
     await softDeleteLog(logId)
+    reload()
+  }
+
+  async function handleDeleteEmployee(employeeId: string, reload: () => void) {
+    await softDeleteEmployee(employeeId)
     reload()
   }
 
@@ -533,6 +541,12 @@ export default function DashboardPage() {
                         >
                           Remove
                         </button>
+                        <button
+                          onClick={() => confirmAction(`Delete employee "${row.employee.name}"? They will be hidden from all views.`, () => handleDeleteEmployee(row.employee.id, loadToday))}
+                          className="bg-gray-700 hover:bg-red-900 rounded-lg px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors"
+                        >
+                          Del Employee
+                        </button>
                       </div>
                     </div>
                   )
@@ -619,6 +633,12 @@ export default function DashboardPage() {
                                         ✕
                                       </button>
                                     </div>
+                                    <button
+                                      onClick={() => confirmAction(`Delete employee "${row.employee.name}"? They will be hidden from all views.`, () => handleDeleteEmployee(row.employee.id, () => loadWeekly(weekMonday)))}
+                                      className="bg-gray-700 hover:bg-red-900 rounded px-1.5 py-0.5 text-xs text-red-500 transition-colors mt-0.5"
+                                    >
+                                      Del
+                                    </button>
                                   </div>
                                 )}
                               </td>
