@@ -31,9 +31,11 @@ export function calcHours(log: TimeLog | null): { regular: number; ot: number } 
   let regular = 0
   let ot = 0
 
+  const effectiveOtStart = Math.max(effectiveStart, OVERTIME_START_MINUTES)
+
   if (outMinutes > OVERTIME_START_MINUTES) {
     regular = (OVERTIME_START_MINUTES - effectiveStart) - lunchDeduction
-    ot = outMinutes - OVERTIME_START_MINUTES
+    ot = outMinutes - effectiveOtStart
   } else {
     regular = (outMinutes - effectiveStart) - lunchDeduction
   }
